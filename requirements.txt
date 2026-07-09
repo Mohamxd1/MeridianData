@@ -38,7 +38,7 @@ python-magic>=0.4.27
 slowapi>=0.1.9
 
 # Monitoring
-sentry-sdk[fastapi]>=1.45.0
+sentry-sdk[fastapi]>=2.64.0
 
 # Payments
 stripe>=9.0.0
