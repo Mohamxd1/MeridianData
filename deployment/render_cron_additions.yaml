@@ -1,0 +1,37 @@
+# Add these cron jobs to render.yaml after Module 5 deployment exists.
+
+services:
+  - type: cron
+    name: dataforge-cleanup-expired-files
+    env: python
+    schedule: "0 3 * * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m dataforge.jobs.cleanup"
+
+  - type: cron
+    name: dataforge-aggregate-token-usage
+    env: python
+    schedule: "0 4 * * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m dataforge.jobs.aggregate_tokens"
+
+  - type: cron
+    name: dataforge-monthly-limit-reset
+    env: python
+    schedule: "5 0 1 * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m dataforge.jobs.monthly_limit_reset"
+
+  - type: cron
+    name: dataforge-limit-warning-emails
+    env: python
+    schedule: "0 14 * * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m dataforge.jobs.send_limit_warning_emails"
+
+  - type: cron
+    name: dataforge-failed-job-alert
+    env: python
+    schedule: "0 * * * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m dataforge.jobs.failed_job_alert"

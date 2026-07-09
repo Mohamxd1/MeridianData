@@ -1,0 +1,37 @@
+{
+  "client_id": "demo_client",
+  "company_name": "North Star Property Management",
+  "schema": {
+    "tenant_name": "string",
+    "unit_number": "string",
+    "property_address": "string",
+    "request_type": "string",
+    "issue_description": "string",
+    "urgency_level": "string",
+    "contact_phone": "string",
+    "preferred_entry_date": "date",
+    "permission_to_enter": "boolean"
+  },
+  "validation_rules": {
+    "required_fields": ["tenant_name", "unit_number", "request_type", "issue_description"],
+    "urgent_keywords": ["flood", "leak", "no heat", "fire", "electrical", "gas", "mold", "sewage"],
+    "custom_rules": [
+      {
+        "field": "urgency_level",
+        "rule": "enum",
+        "value": ["low", "medium", "high", "emergency"]
+      }
+    ]
+  },
+  "extraction_prompt": "Extract maintenance request information for a property management company. Documents may be tenant emails, intake forms, scanned notes, or CSV rows. Capture only information explicitly stated in the document. Normalize urgency_level to low, medium, high, or emergency when directly supported by words in the text. Use emergency only for clear immediate hazards such as flooding, fire, gas leak, active electrical danger, no heat in winter, sewage backup, or major water leak. If a phone number, entry permission, or preferred entry date is not clearly present, return null.",
+  "output_destination": {
+    "type": "csv",
+    "config": {
+      "filename": "north_star_maintenance_requests.csv"
+    }
+  },
+  "review_workflow": {
+    "auto_approve_if": "All required fields are present, no urgency keywords are detected, and custom rules pass.",
+    "flag_for_review_if": "Any required field is missing, an urgency keyword is detected, or urgency_level is emergency."
+  }
+}

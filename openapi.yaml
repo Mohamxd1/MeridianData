@@ -1,0 +1,211 @@
+openapi: 3.1.0
+info:
+  title: DataForge API
+  version: 0.1.0
+  description: Multi-tenant document processing API scoped by client_id.
+servers:
+  - url: http://127.0.0.1:8000
+paths:
+  /clients/{client_id}/process-files:
+    post:
+      summary: Queue one or more files for processing
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '202':
+          description: Files queued
+          content:
+            application/json:
+              example:
+                job_id: 2b97f712-1c2a-40de-a3df-b71212b5d001
+                status: queued
+                message: Files queued for processing
+        '400': { description: Invalid upload }
+        '404': { description: Client config not found }
+        '415': { description: Unsupported media type }
+  /clients/{client_id}/jobs/{job_id}:
+    get:
+      summary: Get background job status
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+        - name: job_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              example:
+                id: 2b97f712-1c2a-40de-a3df-b71212b5d001
+                client_id: demo_client
+                status: complete
+                result:
+                  records:
+                    - record_id: abc123
+                      status: pending_review
+        '404': { description: Job not found }
+  /clients/{client_id}/records:
+    get:
+      summary: List records for one client
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+        - name: status
+          in: query
+          schema: { type: string, enum: [pending_review, approved, rejected] }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: page_size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+      responses:
+        '200':
+          description: Paginated records
+          content:
+            application/json:
+              example:
+                records: []
+                total: 0
+                page: 1
+        '404': { description: Client config not found }
+  /clients/{client_id}/records/{record_id}:
+    get:
+      summary: Get full record
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+        - name: record_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Record detail
+          content:
+            application/json:
+              example:
+                id: abc123
+                client_id: demo_client
+                status: pending_review
+                raw_text: Tenant says kitchen sink is leaking.
+                extracted_fields:
+                  tenant_name: null
+                  issue_description: kitchen sink is leaking
+        '404': { description: Record not found }
+  /clients/{client_id}/records/{record_id}/approve:
+    patch:
+      summary: Approve record and trigger export
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+        - name: record_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reviewer_note: { type: string }
+            example:
+              reviewer_note: Looks correct.
+      responses:
+        '200':
+          description: Approved
+          content:
+            application/json:
+              example:
+                record_id: abc123
+                status: approved
+                export:
+                  exported: true
+                  type: csv
+        '404': { description: Record not found }
+  /clients/{client_id}/records/{record_id}/reject:
+    patch:
+      summary: Reject record
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+        - name: record_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rejection_reason]
+              properties:
+                rejection_reason: { type: string }
+            example:
+              rejection_reason: Missing tenant name.
+      responses:
+        '200':
+          description: Rejected
+          content:
+            application/json:
+              example:
+                record_id: abc123
+                status: rejected
+                rejection_reason: Missing tenant name.
+        '404': { description: Record not found }
+  /clients/{client_id}/export:
+    post:
+      summary: Bulk export approved unexported records
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format: { type: string, enum: [google_sheets, csv, webhook, email, airtable, crm] }
+                date_from: { type: string, format: date }
+            example:
+              format: csv
+              date_from: '2026-05-01'
+      responses:
+        '200':
+          description: Export complete
+          content:
+            application/json:
+              example:
+                exported_record_ids: [abc123]
+                count: 1
+                requested_format: csv
+  /clients/{client_id}/config:
+    get:
+      summary: Get current client config with secrets redacted
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: Redacted config
+        '404': { description: Client config not found }
+components:
+  parameters:
+    ClientId:
+      name: client_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9_]+$'

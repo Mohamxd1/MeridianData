@@ -1,0 +1,52 @@
+# Environment
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Database
+*.sqlite3
+*.db
+
+# Local file storage (dev only — production uses S3/R2)
+storage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.next/
+frontend/build/
+
+# Alembic — keep versions, not cache
+alembic/__pycache__/

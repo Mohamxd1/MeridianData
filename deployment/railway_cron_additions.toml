@@ -1,0 +1,21 @@
+# Add these cron services to your Railway config after Module 5 deployment exists.
+
+[services.cleanup-expired-files]
+startCommand = "python -m dataforge.jobs.cleanup"
+schedule = "0 3 * * *"
+
+[services.aggregate-token-usage]
+startCommand = "python -m dataforge.jobs.aggregate_tokens"
+schedule = "0 4 * * *"
+
+[services.monthly-limit-reset]
+startCommand = "python -m dataforge.jobs.monthly_limit_reset"
+schedule = "5 0 1 * *"
+
+[services.limit-warning-emails]
+startCommand = "python -m dataforge.jobs.send_limit_warning_emails"
+schedule = "0 14 * * *"
+
+[services.failed-job-alert]
+startCommand = "python -m dataforge.jobs.failed_job_alert"
+schedule = "0 * * * *"
