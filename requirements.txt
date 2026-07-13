@@ -31,7 +31,7 @@ Pillow>=10.0.0
 
 # Job queue
 rq>=1.16.0
-redis>=5.0.0
+redis>=8.0.1
 
 # Security
 python-magic>=0.4.27
